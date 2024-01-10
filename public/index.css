@@ -1,0 +1,62 @@
+body {
+    /* font-family: Arial, sans-serif; */
+    margin: 0;
+    /* padding: 0; */
+    background-color: #f4f4f4;
+
+    font-family: 'Courier New', monospace; /* Postavi željeni font */
+    font-size: 12px; /* Postavi željenu veličinu fonta */
+    color: #333; /* Postavi željenu boju teksta */
+    /* background-color: #f8f8f8; Postavi željenu pozadinu */
+    padding: 10px; /* Dodaj malo prostora oko teksta */
+    border: 1px solid #ccc; /* Dodaj ivicu */
+}
+
+/* style i html i js generisao ChatGPT */
+.chat-container{
+    /* moja verzija ovde se podesava visina*/
+    height: 300px;
+    /* prepravljeno */
+    display: flex;
+
+    max-width: 800px;
+    margin: 20px auto;
+    flex-direction: column;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.chat-box{
+    /* height: 300px; */
+    overflow-y: scroll;
+    padding: 10px;
+    background-color: #fff;
+
+    /* dodato */
+    flex:1;
+}
+.user-input {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #eee;
+}
+
+.user-input input {
+    flex: 1;
+    padding: 8px;
+    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+.user-input button {
+    padding: 8px 15px;
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}

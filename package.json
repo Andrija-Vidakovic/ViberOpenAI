@@ -1,0 +1,21 @@
+{
+  "name": "brisi",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app",
+    "dev": "nodemon app"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "nodemon": "^3.0.1",
+    "openai": "^4.17.4",
+    "sqlite3": "^5.1.6",
+    "viber-bot": "^1.0.18"
+  }
+}

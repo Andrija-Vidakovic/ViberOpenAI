@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skrolovajuća Lista sa Selekcijom</title>
+    <style>
+        #scrollable-list {
+            height: 200px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .list-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .list-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .selected {
+            background-color: #3498db;
+            color: #fff;
+        }
+
+        .selected:hover{
+            background-color: #3498db;
+        }
+    </style>
+</head>
+<body>
+
+    <ul id="scrollable-list">
+        <li class="list-item">Stavka 1</li>
+        <li class="list-item">Stavka 2</li>
+        <li class="list-item">Stavka 3</li>
+        <li class="list-item">Stavka 4</li>
+        <li class="list-item">Stavka 5</li>
+        <!-- Dodajte više stavki prema potrebi -->
+    </ul>
+
+    <script>
+        var listItems = document.querySelectorAll('.list-item');
+        var selectedIndex = 0;
+
+        // Postavite inicijalnu selektovanu stavku
+        listItems[selectedIndex].classList.add('selected');
+
+        // Dodajte event listenere za tastaturu
+        document.addEventListener('keydown', function(e) {
+            // 38 je taster strelice prema gore
+            if (e.keyCode === 38 && selectedIndex > 0) {
+                listItems[selectedIndex].classList.remove('selected');
+                selectedIndex--;
+                listItems[selectedIndex].classList.add('selected');
+            }
+            // 40 je taster strelice prema dole
+            else if (e.keyCode === 40 && selectedIndex < listItems.length - 1) {
+                listItems[selectedIndex].classList.remove('selected');
+                selectedIndex++;
+                listItems[selectedIndex].classList.add('selected');
+            }
+        });
+
+        // Dodajte event listener za praćenje klikova na stavke
+        document.getElementById('scrollable-list').addEventListener('click', function(e) {
+            listItems[selectedIndex].classList.remove('selected');
+            selectedIndex = [...listItems].indexOf(e.target);
+            listItems[selectedIndex].classList.add('selected');
+        });
+    </script>
+
+</body>
+</html>
