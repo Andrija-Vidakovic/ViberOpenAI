@@ -10,6 +10,7 @@ import sys_msg from "../openai_sysmsg.js";
 import express from "express";
 const router = express.Router();
 
+
 import { delMessages, insMessage, getMessages } from "./logdb.js";
 
 const bot = new ViberBot({
