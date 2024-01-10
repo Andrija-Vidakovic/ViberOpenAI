@@ -22,14 +22,14 @@ const crt = {
 
 const PORT = process.env.PORT || 5500;
 
-const webhookUrl = "https://69ab-188-120-96-3.ngrok-free.app/viber";
-app.listen(PORT, () => {
-  bot.setWebhook(webhookUrl);
-  console.log(`Server running at PORT ${PORT}...`);
-});
-
-// const webhookUrl = "https://avmotoe7.tech:5500/viber";
-// https.createServer(crt, app).listen(PORT, () => {
+// const webhookUrl = "https://69ab-188-120-96-3.ngrok-free.app/viber";
+// app.listen(PORT, () => {
 //   bot.setWebhook(webhookUrl);
 //   console.log(`Server running at PORT ${PORT}...`);
 // });
+
+const webhookUrl = "https://avmotoe7.tech:5500/viber";
+https.createServer(crt, app).listen(PORT, () => {
+  bot.setWebhook(webhookUrl);
+  console.log(`Server running at PORT ${PORT}...`);
+});
