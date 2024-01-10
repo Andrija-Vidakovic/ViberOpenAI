@@ -9,8 +9,6 @@ import sys_msg from "../openai_sysmsg.js";
 
 import express from "express";
 const router = express.Router();
-// import { gptChat } from "../my_openai/my-openai.js";
-// import { tools_list, callback } from "../my_openai/my-openai-tools.js";
 
 import { delMessages, insMessage, getMessages } from "./logdb.js";
 
