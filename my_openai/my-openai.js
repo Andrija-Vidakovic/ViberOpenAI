@@ -1,4 +1,4 @@
-import token from "./token.js";
+// import token from "./token.js";
 import models from "./models.js";
 
 /**
@@ -26,7 +26,8 @@ async function gptCompletion(requestBody) {
     // mode: "cors",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token.apiKey}`,
+      // Authorization: `Bearer ${token.apiKey}`,OPENAI_API_KEY
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
     },
     body: JSON.stringify(requestBody),
   });
@@ -88,15 +89,13 @@ async function gptModels() {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token.apiKey}`,
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
     },
   });
   return response.json();
 }
 
 export { gptCompletion, gptModels, gptChat, models };
-
-
 
 /*
  * FORMAT PORUKA SA SERVERA

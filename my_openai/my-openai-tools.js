@@ -1,67 +1,43 @@
-import { isBooked, book, get_termins } from "../db/db.js";
+import { getEvents, insertEvent } from "./google_calendar.js";
 
-/**********************************************************
- * Deskripcija funkcije cije pozivanje OpenAI moze da trazi
- * Opis obuhvata: ime funkcije, namena na osnovu cega model
- * donosi odluku o pozivanju i opis parametara za poziv
- * funkcije i listu obaveznih parametara kod poziva.
+/********************************************************************
+ * Pomocna funkcija, vraca listu zakazanih termina zadatog dana
+ * upitom u kalendar
  *
- * Opis funkcije se registruje kod OpenAI preko requestBody
- * objekta koji se salje kao body u POST http metodu
- *
+ * @param {*} yyyy_mm_dd string 'YYYY-MM-DD'
  */
-const get_weather_func = {
-  name: "get_weather",
-  description: "Determine weather in my location",
-  parameters: {
-    type: "object",
-    properties: {
-      location: {
-        type: "string",
-        description: "The city and state e.g. San Francisco, CA",
-      },
-      unit: {
-        type: "string",
-        enum: ["C", "F"],
-      },
-    },
-    required: ["location"],
-  },
-};
+async function getBookedSlots(yyyy_mm_dd) {
+  //------------ pocetak funkcije -------------------s
+  // start - end je interval od jednog dana
+  const start = new Date(yyyy_mm_dd);
+  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
 
-/**********************************************************
- * Definicija funkcije za vreme
+  // lista zakazanih dogadjaja u zadatom danu
+  const eventList = await getEvents(start, end);
+
+  // uproscena lista rezervisanih vremenskih slotova
+  return eventList.map((value) => {
+    return {
+      begin: new Date(value.start.dateTime),
+      end: new Date(value.end.dateTime),
+      booked: true,
+    };
+  });
+}
+
+/********************************************************************
+ * Proverava da li je termin bukiran
+ *
+ * @param {*} date_time string 'YYYY-MM-DDThh:mm:ssZ'
+ * @returns
  */
-function get_weather({ location, unit }) {
-  let temperature = "unknown";
-  unit = unit || "C";
-  switch (location) {
-    case "Beograd":
-    case "Beograd, Srbija":
-    case "Belgrade":
-    case "Belgrade, Serbia":
-      temperature = 4;
-      break;
-    case "Sonta":
-    case "Сонта":
-    case "Sonta, Srbija":
-    case "Sonta, Serbia":
-    case "Сонта, Србија":
-      temperature = 21;
-      break;
-    case "Kraljevo":
-    case "Краљево":
-    case "Kraljevo, Srbija":
-    case "Kraljevo, Serbia":
-    case "Краљево, Србија":
-      temperature = -30;
-      break;
-    // default:
-    //   break;
-  }
-  const ret = JSON.stringify({ location, temperature, unit });
-  console.log(`Exit get_weather... data:${ret}`);
-  return ret;
+async function isBooked(date_time) {
+  const dt = new Date(date_time);
+  const yyyy_mm_dd = dt.toISOString().substring(0, 10);
+  const booked_slots = await getBookedSlots(yyyy_mm_dd);
+  return booked_slots.some((value) => {
+    return value.begin <= dt && dt < value.end;
+  });
 }
 
 /**********************************************************
@@ -88,21 +64,74 @@ const get_slots_func = {
 };
 
 /**********************************************************
- * Funkcija vraca slobodne ili zauzete termine
- * @param {*}
+ * Funkcija vraca slobodne ili zauzete termine u zadatom danu
+ * @param {*} {begin:'YYYY-MM-DD', booked:true/false}
  * @returns
  */
 async function get_slots({ begin, booked }) {
-  //> 
-  console.log("get_slots", begin, "booked", booked);
+  // pomocna funkcija, formira novi niz od vremenskih slotova iz niza A
+  // koji se ne preklapaju sa slotovima u nizu B, odnosno vraca novi niz
+  // od elemenata iz A sa vremenskim slotovima koji su disjunktni u odnosu
+  // na one iz niza B
+  const freeSlots = (nizA, nizB) => {
+    // proverava da li su intervali disjunktni
+    const disjunkt_test = (a, b) => {
+      return !(
+        (a.begin <= b.begin && b.begin < a.end) ||
+        (a.begin < b.end && b.end < a.end) ||
+        (a.begin >= b.begin && a.end <= b.end)
+      );
+    };
 
-  const begin_ms = new Date(begin).getTime();
-  let tmpTermini = await get_termins(begin_ms, booked);
-  console.log(tmpTermini);
-  return JSON.stringify(tmpTermini);
+    let rezultat = nizA.filter((elementA) => {
+      return !nizB.some((elementB) => !disjunkt_test(elementB, elementA));
+    });
+
+    return rezultat;
+  };
+
+  // pomocna funkcija, generise zadati broj vremenskih intervala
+  const allSlots = (startDate, startTime, numberOfSlots) => {
+    const timeSlots = [];
+    let currentSlotStart = new Date(startDate);
+    currentSlotStart.setHours(startTime + 1);
+
+    for (let i = 0; i < numberOfSlots; i++) {
+      // Postavljanje početka vremenskog slota na sledeći ceo sat
+      currentSlotStart.setMinutes(0);
+      currentSlotStart.setSeconds(0);
+
+      const currentSlotEnd = new Date(currentSlotStart);
+      // Postavljanje kraja vremenskog slota na 59 minuta od početka
+      currentSlotEnd.setMinutes(60);
+
+      timeSlots.push({
+        begin: new Date(currentSlotStart),
+        end: new Date(currentSlotEnd),
+        booked: false,
+      });
+
+      // Pomeramo se na sledeći sat
+      currentSlotStart.setHours(currentSlotStart.getHours() + 1);
+    }
+
+    return timeSlots;
+  };
+
+  const booked_slots = await getBookedSlots(begin);
+
+  let ret = booked_slots;
+  if (!booked) {
+    // pocetak radnog vremena u 9, 8 slotova od po sat
+    const all_slots = allSlots(begin, 9, 8);
+    ret = freeSlots(all_slots, booked_slots);
+  }
+
+  return JSON.stringify(ret);
 }
+// ************************ end get_slots ***************************
 
-/**********************************************************
+/********************************************************************
  * Opis funkcije koja rezervise termine
  */
 const set_slot_func = {
@@ -123,37 +152,52 @@ const set_slot_func = {
 /**********************************************************
  * Funkcija rezervise termin
  *
- * @param {*} param0
+ * @param {*} param0 string 'YYYY-MM-DDThh:mm:ssZ'
  * @returns
  */
 async function set_slot({ begin }) {
-  //> ispis
-  console.log("set_slot_new", begin);
-
-  const begin_ms = new Date(begin).getTime();
-  const booked = await isBooked(begin_ms);
+  const booked = await isBooked(begin);
 
   let ret = {
     message: "Termin nije dostupan.",
   };
 
   if (!booked) {
-    book(begin_ms);
-    ret = {
-      message: "Termin je zakazan.",
+    const event_begin = new Date(begin);
+    const event_end = new Date(begin);
+    event_end.setHours(event_end.getHours() + 1);
+
+    let event = {
+      summary: `Zauzet termin`,
+      description: `This is the description.`,
+      start: {
+        dateTime: event_begin, // moze i string 'YYYY-MM-DDThh:mm:ssZ'
+        // timeZone: "Europe/Belgrade", // opciono
+      },
+      end: {
+        dateTime: event_end,
+        // timeZone: "Europe/Belgrade", // opciono
+      },
     };
+
+    const status = await insertEvent(event);
+
+    if (status)
+      ret = {
+        message: "Termin je zakazan.",
+      };
   }
   return JSON.stringify(ret);
 }
 
 // tools lista koja se exportuje
 const tools_list = [
-  { type: "function", function: get_weather_func },
+  // { type: "function", function: get_weather_func },
   { type: "function", function: get_slots_func },
   { type: "function", function: set_slot_func },
 ];
 
 // callback objekat sa funkcijama opisanim u tools_list
-const callback = { get_weather, get_slots, set_slot };
+const callback = { get_slots, set_slot };
 
 export { tools_list, callback };

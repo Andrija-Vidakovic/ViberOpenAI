@@ -10,15 +10,13 @@ import sys_msg from "../openai_sysmsg.js";
 import express from "express";
 const router = express.Router();
 
-
 import { delMessages, insMessage, getMessages } from "./logdb.js";
 
 const bot = new ViberBot({
-  authToken: "5237ad1ff8e7d30e-e1d08d4b661d4422-ccef8c20dcf29cfb",
+  authToken: process.env.VIBER_AUTH_TOKEN,
   name: "TestOpenAIBot",
   // It is recommended to be 720x720, and no more than 100kb.
   avatar: "https://raw.githubusercontent.com/devrelv/drop/master/151-icon.png",
-  // avatar: "file:./151-icon.png",
 });
 
 // Perfect! Now here's the key part:
@@ -54,19 +52,14 @@ bot.on(BotEvents.MESSAGE_RECEIVED, async (message, response) => {
   msg.push(...dialog);
   requestBody.messages = msg;
   const retAI = await gptChat(requestBody, callback);
-  const answer = retAI.choices[0].message
-  
+  const answer = retAI.choices[0].message;
+
   console.log(answer.content);
   //
   //> formiraj poruku za odgovor
   const timestamp = new Date().getTime().toString();
 
-  const resp_message = new TextMessage(
-    answer.content,
-    null,
-    null,
-    timestamp
-  );
+  const resp_message = new TextMessage(answer.content, null, null, timestamp);
 
   console.log("---------- MESSAGE_RECEIVED END ----------");
 

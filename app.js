@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import apiRoute from "./route/apiRoute.js";
 import { default as viber, bot } from "./route/viber/viber.js";
@@ -7,7 +8,7 @@ import https from "https";
 const app = express();
 
 //middleware
-app.use(express.static('public'));
+app.use(express.static("public"));
 
 // HTML api
 app.use("/openai", apiRoute);
@@ -22,7 +23,7 @@ const crt = {
 
 const PORT = process.env.PORT || 5500;
 
-// const webhookUrl = "https://69ab-188-120-96-3.ngrok-free.app/viber";
+// const webhookUrl = "https://390e-77-243-25-247.ngrok-free.app/viber";
 // app.listen(PORT, () => {
 //   bot.setWebhook(webhookUrl);
 //   console.log(`Server running at PORT ${PORT}...`);
