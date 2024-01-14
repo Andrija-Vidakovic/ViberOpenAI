@@ -76,11 +76,7 @@ async function get_slots({ begin, booked }) {
   const freeSlots = (nizA, nizB) => {
     // proverava da li su intervali disjunktni
     const disjunkt_test = (a, b) => {
-      return !(
-        (a.begin <= b.begin && b.begin < a.end) ||
-        (a.begin < b.end && b.end < a.end) ||
-        (a.begin >= b.begin && a.end <= b.end)
-      );
+      return (b.begin < a.begin && b.end <= a.begin) || a.end <= b.begin;
     };
 
     let rezultat = nizA.filter((elementA) => {
