@@ -16,21 +16,43 @@ app.use("/openai", apiRoute);
 // viber api
 app.use("/viber", viber);
 
-const crt = {
-  key: fs.readFileSync("./cert/certificate.key"),
-  cert: fs.readFileSync("./cert/certificate.crt"),
-};
-
 const PORT = process.env.PORT || 5500;
 
-// const webhookUrl = "https://390e-77-243-25-247.ngrok-free.app/viber";
-// app.listen(PORT, () => {
-//   bot.setWebhook(webhookUrl);
-//   console.log(`Server running at PORT ${PORT}...`);
-// });
+const avmotoe7_url = "https://avmotoe7.tech:5500/viber";
+const ngrok_url = "https://08b3-188-120-99-51.ngrok-free.app/viber";
 
-const webhookUrl = "https://avmotoe7.tech:5500/viber";
-https.createServer(crt, app).listen(PORT, () => {
-  bot.setWebhook(webhookUrl);
-  console.log(`Server running at PORT ${PORT}...`);
-});
+// Izbor da li se pokrece lokalni server ili cloud na AWS
+// lokalni   : webhookUrl = ngrok_url;
+// AWS cloud : webhookUrl = avmotoe7_url;
+
+const webhookUrl = ngrok_url;
+// webhookUrl = avmotoe7_url;
+
+//> Javna IP adresa, server na lokalnoj masini
+if (webhookUrl == ngrok_url)
+  app.listen(PORT, () => {
+    bot.setWebhook(webhookUrl);
+    console.log(`Server running on localhost, public IP at PORT ${PORT}...`);
+  });
+//
+//> Javna IP, server na AWS
+else if (webhookUrl == avmotoe7_url) {
+  const crt = {
+    key: fs.readFileSync("./cert/certificate.key"),
+    cert: fs.readFileSync("./cert/certificate.crt"),
+  };
+
+  https.createServer(crt, app).listen(PORT, () => {
+    bot.setWebhook(webhookUrl);
+    console.log(`Server running on AWS at PORT ${PORT}...`);
+  });
+  //
+  //> Server nije pokrenut
+} else {
+  `Server is not running ...`;
+}
+
+// // ovo je samo za http
+// app.listen(PORT, () => {
+//   console.log(`Listen on port ${PORT} ...`);
+// });
